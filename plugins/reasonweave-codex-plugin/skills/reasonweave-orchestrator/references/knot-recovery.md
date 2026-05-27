@@ -14,6 +14,10 @@ A knot is a blocker, conflict, stale assumption, or coordination failure.
 - Packet confidence is not high: role-escalate when reasoning is hard; gather evidence when facts are missing.
 - Packet grounding risk is medium or high: run an evidence pass before model escalation.
 - Access violation appears: stop integration, discard or quarantine the packet, and re-route with correct access.
+- API runtime verification fails: block the strict API strand and discard or quarantine its unverified verification claim; subscription advisory work remains separate.
+- Receipt is stale, replayed, tampered, unsigned, unknown-key, or chain-mismatched: reject it and require a fresh verified run.
+- Fallback attempt appears without router reroute: block and reroute before dispatch.
+- Required API review strand is missing from final status: reopen completion reporting, mark the reviewer/docs-reviewer/critic as verified, blocked, or failed, and remove any unsupported review claim.
 - Top-tier resolver cannot pass gates: block and report missing evidence, ambiguity, failed verification, or unsafe downgrade.
 - Infinite planning: identify smallest safe executable slice.
 - Build strand touched unowned files: review those diffs manually before merging or discard with care.

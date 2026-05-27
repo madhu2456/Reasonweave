@@ -3,17 +3,61 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $source = Join-Path $repoRoot "skills\reasonweave-orchestrator"
 $target = "C:\Users\madhu\.agents\skills\reasonweave-orchestrator"
+$targetParent = Split-Path -Parent $target
+$suffix = [Guid]::NewGuid().ToString("N")
+$stage = Join-Path $targetParent ".reasonweave-orchestrator.install-$suffix"
+$backup = Join-Path $targetParent ".reasonweave-orchestrator.backup-$suffix"
 
 if (-not (Test-Path -LiteralPath (Join-Path $source "SKILL.md"))) {
   throw "Source skill not found: $source"
 }
 
-if (Test-Path -LiteralPath $target) {
-  Remove-Item -LiteralPath $target -Recurse -Force
+function Get-RelativeFiles($root) {
+  Get-ChildItem -LiteralPath $root -Recurse -File |
+    ForEach-Object { $_.FullName.Substring($root.Length).TrimStart("\", "/") } |
+    Sort-Object
 }
 
-New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
-Copy-Item -LiteralPath $source -Destination (Split-Path -Parent $target) -Recurse -Force
+New-Item -ItemType Directory -Force -Path $targetParent | Out-Null
+$sourceFiles = @(Get-RelativeFiles $source)
+
+try {
+  Copy-Item -LiteralPath $source -Destination $stage -Recurse -Force
+  $stageFiles = @(Get-RelativeFiles $stage)
+  if (($sourceFiles -join "`n") -ne ($stageFiles -join "`n")) {
+    throw "Staged ReasonWeave file set does not match canonical source."
+  }
+
+  foreach ($relative in $sourceFiles) {
+    $sourceHash = (Get-FileHash -LiteralPath (Join-Path $source $relative) -Algorithm SHA256).Hash
+    $stageHash = (Get-FileHash -LiteralPath (Join-Path $stage $relative) -Algorithm SHA256).Hash
+    if ($sourceHash -ne $stageHash) {
+      throw "Staged ReasonWeave hash mismatch: $relative"
+    }
+  }
+
+  if (Test-Path -LiteralPath $target) {
+    Move-Item -LiteralPath $target -Destination $backup
+  }
+  try {
+    Move-Item -LiteralPath $stage -Destination $target
+  }
+  catch {
+    if (Test-Path -LiteralPath $backup) {
+      Move-Item -LiteralPath $backup -Destination $target
+    }
+    throw
+  }
+  if (Test-Path -LiteralPath $backup) {
+    Remove-Item -LiteralPath $backup -Recurse -Force
+  }
+}
+finally {
+  if (Test-Path -LiteralPath $stage) {
+    Remove-Item -LiteralPath $stage -Recurse -Force
+  }
+}
 
 Write-Host "Installed ReasonWeave skill to $target"
+Write-Host "Staged and verified ReasonWeave before replacement with rollback protection ($($sourceFiles.Count) files)."
 Write-Host "Restart Codex to refresh skill metadata."

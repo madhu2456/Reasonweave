@@ -1,4 +1,4 @@
 interface:
   display_name: ReasonWeave Orchestrator
-  short_description: Router-first Codex orchestration with routing, access, evidence, and proof gates.
-  default_prompt: Use ReasonWeave with Router-first delegation. Router is the only platform default agent and has route-only access. Every delegated strand must use explicit model, reasoning, access tier, confidence, grounding, evidence, and proof gates.
+  short_description: Router-first orchestration for native development, memory, growth, web work, and API verification.
+  default_prompt: Use ReasonWeave with Router-first delegation and native workflow gates. Use clean advisory routing in Codex subscription mode and strict runtime metadata only for API-verified execution. Route memory, growth, web-audit, web-verify, and web-build work through their native modules.

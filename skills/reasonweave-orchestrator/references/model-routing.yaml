@@ -5,12 +5,25 @@
     "acceptance": {
       "confidence": "high",
       "grounding_risk": "low",
-      "access_violations": "none"
+      "access_violations": "none",
+      "execution_status": [
+        "runtime_verified",
+        "receipt_verified"
+      ],
+      "model_match": true,
+      "reasoning_match": true,
+      "receipt_valid": true,
+      "dispatch_authorized": true
     },
     "final_resolver": {
       "logical_agent": "critic",
       "model": "gpt-5.5",
       "reasoning_effort": "xhigh"
+    },
+    "terminal_route": {
+      "model": "gpt-5.5",
+      "reasoning_effort": "xhigh",
+      "applies_to_all_logical_agents": true
     },
     "max_escalations_per_strand": 2
   },
@@ -32,6 +45,215 @@
     "gpt-5.3-codex",
     "gpt-5.2"
   ],
+  "execution_statuses": [
+    "runtime_verified",
+    "receipt_verified",
+    "spawn_request_only",
+    "blocked_unverified",
+    "failed"
+  ],
+  "verification_sources": [
+    "platform_metadata",
+    "runner_receipt",
+    "spawn_request",
+    "none"
+  ],
+  "failure_states": [
+    "missing_api_key",
+    "invalid_api_key",
+    "bad_key_permissions",
+    "network_failure",
+    "rate_limited",
+    "invalid_request",
+    "unsupported_runtime",
+    "provider_refusal",
+    "provider_error",
+    "model_unavailable",
+    "tool_spawn_failure",
+    "timeout",
+    "missing_runtime_metadata",
+    "incomplete_response",
+    "model_mismatch",
+    "reasoning_mismatch",
+    "missing_signing_key",
+    "receipt_verification_failure",
+    "unauthorized_fallback_attempt",
+    "parent_child_chain_mismatch",
+    "subscription_metadata_untrusted",
+    "codex_config_missing",
+    "codex_config_invalid",
+    "route_not_authorized",
+    "ledger_write_failure",
+    "ledger_integrity_failure",
+    "ledger_read_failure"
+  ],
+  "execution_surfaces": {
+    "api": {
+      "mode": "strict_verified",
+      "runtime_verification_required": true,
+      "report_execution_status": true,
+      "user_facing_route_format": "Route: logical_agent=<agent>; intended_model=<model>; intended_reasoning=<effort>; execution_model=<model|none>; resolved_model=<model|none>; execution_reasoning=<effort|none>; execution_status=<runtime_verified|receipt_verified|spawn_request_only|blocked_unverified|failed>; model_match=<true|false>; reasoning_match=<true|false|unknown>; verification_source=<platform_metadata|runner_receipt|spawn_request|none>; access=<tier>"
+    },
+    "codex_subscription": {
+      "mode": "advisory",
+      "runtime_verification_required": false,
+      "report_execution_status": false,
+      "user_facing_route_format": "ReasonWeave: logical_agent=<agent>; intended_model=<model>; intended_reasoning=<effort>; access=<tier>; mode=codex_subscription",
+      "suppressed_user_facing_fields": [
+        "execution_model",
+        "resolved_model",
+        "execution_reasoning",
+        "execution_status",
+        "model_match",
+        "reasoning_match",
+        "verification_source"
+      ],
+      "forbidden_unverified_claims": [
+        "verified model execution",
+        "signed reviewer pass",
+        "API-verified review",
+        "approved",
+        "no issues found"
+      ]
+    }
+  },
+  "runner_limits": {
+    "tool_timeout_ms": 120000,
+    "max_output_tokens": 32768,
+    "max_output_text_chars": 100000,
+    "require_provider_response_id": true
+  },
+  "model_aliases": {
+    "gpt-5.5": [
+      "gpt-5.5",
+      "gpt-5.5-*"
+    ],
+    "gpt-5.4": [
+      "gpt-5.4",
+      "gpt-5.4-*"
+    ],
+    "gpt-5.4-mini": [
+      "gpt-5.4-mini",
+      "gpt-5.4-mini-*"
+    ],
+    "gpt-5.3-codex": [
+      "gpt-5.3-codex",
+      "gpt-5.3-codex-*"
+    ],
+    "gpt-5.2": [
+      "gpt-5.2",
+      "gpt-5.2-*"
+    ]
+  },
+  "model_alias_rule": "Versioned suffix matches never cross into a separately allowlisted named model family; for example gpt-5.4-mini is not a valid resolved alias for gpt-5.4.",
+  "runtime_receipt": {
+    "receipt_version": "1",
+    "hash_algorithm": "sha256",
+    "hash_domain": "reasonweave-runtime-receipt:v1\n",
+    "signature_algorithm": "ed25519",
+    "max_lifetime_ms": 600000,
+    "canonical_json": {
+      "encoding": "utf-8",
+      "sort_keys": true,
+      "whitespace": "none",
+      "timestamp_format": "normalized_iso8601"
+    },
+    "required_fields": [
+      "receipt_version",
+      "run_id",
+      "nonce",
+      "delegated_agent_id",
+      "parent_run_id",
+      "logical_agent",
+      "primary_task_type",
+      "risk_flags",
+      "platform_agent_type",
+      "access",
+      "intended_model",
+      "resolved_model",
+      "execution_model",
+      "intended_reasoning",
+      "execution_reasoning",
+      "verification_source",
+      "model_match",
+      "reasoning_match",
+      "dispatch_authorized",
+      "issued_at",
+      "expires_at",
+      "key_id",
+      "receipt_hash",
+      "receipt_signature"
+    ],
+    "hash_excluded_fields": [
+      "receipt_hash",
+      "receipt_signature"
+    ],
+    "replay_key": [
+      "run_id",
+      "nonce"
+    ],
+    "reject_if": [
+      "expired",
+      "replayed_run_id_nonce",
+      "unknown_key_id",
+      "missing_public_key",
+      "invalid_hash",
+      "invalid_signature",
+      "invalid_receipt_lifetime",
+      "receipt_lifetime_exceeded",
+      "parent_child_chain_mismatch"
+    ]
+  },
+  "completion_reporting": {
+    "api": {
+      "required_for_routed_work": true,
+      "report_every_selected_agent": true,
+      "required_fields": [
+        "logical_agent",
+        "intended_model",
+        "intended_reasoning",
+        "execution_status",
+        "verification_source",
+        "decision",
+        "block_reason"
+      ],
+      "review_status_agents": [
+        "reviewer",
+        "docs-reviewer",
+        "critic"
+      ],
+      "review_required_task_types": [
+        "audit",
+        "review",
+        "implement",
+        "refactor",
+        "docs",
+        "ui",
+        "data",
+        "memory-cleanup",
+        "web-audit",
+        "web-build"
+      ],
+      "blocked_review_status": "blocked_unverified",
+      "forbidden_claims_without_verified_review": [
+        "review passed",
+        "approved",
+        "no issues found"
+      ]
+    },
+    "codex_subscription": {
+      "report_intended_route": true,
+      "report_execution_status": false,
+      "may_proceed_advisory": true,
+      "forbidden_claims_without_api_verification": [
+        "verified model execution",
+        "signed reviewer pass",
+        "API-verified review",
+        "approved",
+        "no issues found"
+      ]
+    }
+  },
   "access_tiers": {
     "A1": {
       "name": "route-only",
@@ -69,7 +291,7 @@
         "read-files",
         "search-files",
         "inspect-diffs",
-        "approved-web-docs"
+        "approved-source-research"
       ],
       "forbidden_tools": [
         "edit-files",
@@ -105,8 +327,9 @@
       ]
     },
     "A6": {
-      "name": "authorized-ops-release",
+      "name": "authorized-sensitive-ops-release",
       "allowed_tools": [
+        "approved-sensitive-cleanup",
         "approved-ops",
         "approved-release",
         "approved-git-mutation"
@@ -163,6 +386,42 @@
       "escalated_reasoning": "medium"
     },
     {
+      "name": "memory-reader",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.4-mini",
+      "default_reasoning": "low",
+      "escalated_model": "gpt-5.4",
+      "escalated_reasoning": "medium"
+    },
+    {
+      "name": "memory-manager",
+      "platform_agent_type": "worker",
+      "access_tier": "A4",
+      "default_model": "gpt-5.3-codex",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "memory-cleaner",
+      "platform_agent_type": "worker",
+      "access_tier": "A6",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    },
+    {
+      "name": "growth-strategist",
+      "platform_agent_type": "explorer",
+      "access_tier": "A3",
+      "default_model": "gpt-5.4",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
       "name": "auditor",
       "platform_agent_type": "explorer",
       "access_tier": "A2",
@@ -170,6 +429,15 @@
       "default_reasoning": "medium",
       "escalated_model": "gpt-5.5",
       "escalated_reasoning": "high"
+    },
+    {
+      "name": "web-auditor",
+      "platform_agent_type": "explorer",
+      "access_tier": "A3",
+      "default_model": "gpt-5.4",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
     },
     {
       "name": "reviewer",
@@ -204,7 +472,7 @@
       "access_tier": "A4",
       "default_model": "gpt-5.3-codex",
       "default_reasoning": "high",
-      "escalated_model": "gpt-5.2",
+      "escalated_model": "gpt-5.5",
       "escalated_reasoning": "high"
     },
     {
@@ -245,6 +513,24 @@
     },
     {
       "name": "ui-worker",
+      "platform_agent_type": "worker",
+      "access_tier": "A5",
+      "default_model": "gpt-5.3-codex",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "web-verifier",
+      "platform_agent_type": "worker",
+      "access_tier": "A5",
+      "default_model": "gpt-5.3-codex",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "web-builder",
       "platform_agent_type": "worker",
       "access_tier": "A5",
       "default_model": "gpt-5.3-codex",
@@ -312,8 +598,17 @@
     "docs",
     "ui",
     "data",
-    "ops",
-    "release"
+    "memory-read",
+    "memory-write",
+    "memory-cleanup",
+    "growth",
+    "web-audit",
+    "web-verify",
+    "web-build",
+    "ops-check",
+    "ops-run",
+    "release-check",
+    "release-run"
   ],
   "task_routes": {
     "answer": [],
@@ -362,11 +657,43 @@
       "data-worker",
       "reviewer"
     ],
-    "ops": [
+    "memory-read": [
+      "memory-reader"
+    ],
+    "memory-write": [
+      "memory-manager"
+    ],
+    "memory-cleanup": [
+      "memory-cleaner",
+      "critic"
+    ],
+    "growth": [
+      "growth-strategist"
+    ],
+    "web-audit": [
+      "mapper",
+      "web-auditor",
+      "critic"
+    ],
+    "web-verify": [
+      "web-verifier"
+    ],
+    "web-build": [
+      "web-builder",
+      "web-verifier",
+      "reviewer"
+    ],
+    "ops-check": [
+      "ops-checker"
+    ],
+    "ops-run": [
       "ops-checker",
       "ops-runner"
     ],
-    "release": [
+    "release-check": [
+      "release-checker"
+    ],
+    "release-run": [
       "release-checker",
       "release-runner"
     ]

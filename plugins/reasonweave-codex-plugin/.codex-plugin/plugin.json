@@ -1,7 +1,7 @@
 {
   "name": "reasonweave-codex-plugin",
   "version": "0.1.0",
-  "description": "Router-first ReasonWeave orchestration for Codex with routing, access, evidence, and proof gates.",
+  "description": "Router-first ReasonWeave orchestration for Codex with native design, planning, debugging, review, release, runtime verification, subscription observation, access, evidence, and proof gates.",
   "author": {
     "name": "ReasonWeave"
   },
@@ -16,10 +16,11 @@
     "reasonweave"
   ],
   "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "ReasonWeave",
-    "shortDescription": "Router-first orchestration for complex Codex work.",
-    "longDescription": "ReasonWeave coordinates Codex work with router-first delegation, model and reasoning selection, access contracts, evidence gates, proof gates, and compact packets.",
+    "shortDescription": "Router-first orchestration with trusted runtime verification.",
+    "longDescription": "ReasonWeave coordinates Codex work with router-first delegation, native design/planning/debugging/review/release workflows, model and reasoning selection, trusted runtime metadata contracts, subscription-observed config reporting, access contracts, evidence gates, proof gates, and compact packets.",
     "developerName": "ReasonWeave",
     "category": "Productivity",
     "capabilities": [

@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "reasonweave-runner": {
+      "command": "node",
+      "args": [
+        "./mcp/reasonweave-runner/server.mjs"
+      ],
+      "env_vars": [
+        "OPENAI_API_KEY",
+        "OPENAI_ORG_ID",
+        "OPENAI_PROJECT_ID",
+        "CODEX_HOME",
+        "REASONWEAVE_CODEX_CONFIG_PATH",
+        "REASONWEAVE_CODEX_AUTH_PATH",
+        "REASONWEAVE_RECEIPT_KEY_ID",
+        "REASONWEAVE_RECEIPT_PRIVATE_KEY_PATH",
+        "REASONWEAVE_RECEIPT_PUBLIC_KEYS_PATH",
+        "REASONWEAVE_LEDGER_DIR",
+        "REASONWEAVE_CLOCK_SKEW_MS"
+      ],
+      "cwd": ".",
+      "startup_timeout_sec": 10,
+      "tool_timeout_sec": 120,
+      "required": false
+    }
+  }
+}

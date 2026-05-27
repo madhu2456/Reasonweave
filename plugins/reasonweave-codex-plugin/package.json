@@ -1,0 +1,10 @@
+{
+  "name": "reasonweave-codex-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:mcp": "node --test ./mcp/reasonweave-runner/test/*.test.mjs",
+    "self-test:mcp": "node ./mcp/reasonweave-runner/scripts/self-test.mjs"
+  }
+}
