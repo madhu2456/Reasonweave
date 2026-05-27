@@ -1,0 +1,3 @@
+display_name: ReasonWeave Orchestrator
+short_description: Coordinates complex Codex work with strands, passes, proof gates, and compressed packets.
+default_prompt: Use ReasonWeave Orchestrator to classify task scope, plan safe execution passes, delegate independent strands, collect compact packets, save tokens, verify results through proof gates, and preserve clear communication when compression would create risk.

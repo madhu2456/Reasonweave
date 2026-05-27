@@ -1,0 +1,14 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs/temp
+*.log
+.tmp/
+tmp/
+
+# Runtime/generated archives should not live in source repo
+skills-archive/
+.skill-lock.json
