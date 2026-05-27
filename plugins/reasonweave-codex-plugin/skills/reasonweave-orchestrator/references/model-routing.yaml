@@ -1,0 +1,399 @@
+{
+  "policy": {
+    "version": "0.1.0",
+    "statement": "ReasonWeave does not claim permanent mathematical optimality; it enforces measurable routing quality through validation, evidence gates, evals, and safe blocking.",
+    "acceptance": {
+      "confidence": "high",
+      "grounding_risk": "low",
+      "access_violations": "none"
+    },
+    "final_resolver": {
+      "logical_agent": "critic",
+      "model": "gpt-5.5",
+      "reasoning_effort": "xhigh"
+    },
+    "max_escalations_per_strand": 2
+  },
+  "platform_agent_types": [
+    "default",
+    "explorer",
+    "worker"
+  ],
+  "reasoning_efforts": [
+    "low",
+    "medium",
+    "high",
+    "xhigh"
+  ],
+  "models": [
+    "gpt-5.5",
+    "gpt-5.4",
+    "gpt-5.4-mini",
+    "gpt-5.3-codex",
+    "gpt-5.2"
+  ],
+  "access_tiers": {
+    "A1": {
+      "name": "route-only",
+      "allowed_tools": [
+        "classify",
+        "route",
+        "emit-router-packet"
+      ],
+      "forbidden_tools": [
+        "edit-files",
+        "run-tests",
+        "mutating-shell",
+        "git-mutation",
+        "deploy"
+      ]
+    },
+    "A2": {
+      "name": "read-only-local",
+      "allowed_tools": [
+        "read-files",
+        "search-files",
+        "inspect-diffs",
+        "inspect-status"
+      ],
+      "forbidden_tools": [
+        "edit-files",
+        "run-tests",
+        "network",
+        "git-mutation"
+      ]
+    },
+    "A3": {
+      "name": "read-plus-research",
+      "allowed_tools": [
+        "read-files",
+        "search-files",
+        "inspect-diffs",
+        "approved-web-docs"
+      ],
+      "forbidden_tools": [
+        "edit-files",
+        "run-tests",
+        "git-mutation"
+      ]
+    },
+    "A4": {
+      "name": "write-owned-files",
+      "allowed_tools": [
+        "edit-owned-files",
+        "focused-checks"
+      ],
+      "forbidden_tools": [
+        "unowned-edits",
+        "destructive-commands",
+        "git-push",
+        "git-reset"
+      ]
+    },
+    "A5": {
+      "name": "verification",
+      "allowed_tools": [
+        "edit-owned-files",
+        "run-tests",
+        "run-builds",
+        "browser-checks"
+      ],
+      "forbidden_tools": [
+        "deploy",
+        "secrets",
+        "destructive-commands"
+      ]
+    },
+    "A6": {
+      "name": "authorized-ops-release",
+      "allowed_tools": [
+        "approved-ops",
+        "approved-release",
+        "approved-git-mutation"
+      ],
+      "forbidden_tools": [
+        "unapproved-production",
+        "unapproved-destructive"
+      ]
+    },
+    "A7": {
+      "name": "blocked-destructive",
+      "allowed_tools": [],
+      "forbidden_tools": [
+        "all-action-before-approval"
+      ]
+    }
+  },
+  "logical_agents": [
+    {
+      "name": "router",
+      "platform_agent_type": "default",
+      "access_tier": "A1",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high",
+      "top_tier_reasoning": "xhigh"
+    },
+    {
+      "name": "mapper",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.4",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "planner",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    },
+    {
+      "name": "researcher",
+      "platform_agent_type": "explorer",
+      "access_tier": "A3",
+      "default_model": "gpt-5.4-mini",
+      "default_reasoning": "low",
+      "escalated_model": "gpt-5.4",
+      "escalated_reasoning": "medium"
+    },
+    {
+      "name": "auditor",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.4",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "reviewer",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    },
+    {
+      "name": "critic",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    },
+    {
+      "name": "implementer",
+      "platform_agent_type": "worker",
+      "access_tier": "A4",
+      "default_model": "gpt-5.3-codex",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "refactorer",
+      "platform_agent_type": "worker",
+      "access_tier": "A4",
+      "default_model": "gpt-5.3-codex",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.2",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "debugger",
+      "platform_agent_type": "worker",
+      "access_tier": "A5",
+      "default_model": "gpt-5.3-codex",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    },
+    {
+      "name": "tester",
+      "platform_agent_type": "worker",
+      "access_tier": "A5",
+      "default_model": "gpt-5.3-codex",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.3-codex",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "docs-writer",
+      "platform_agent_type": "worker",
+      "access_tier": "A4",
+      "default_model": "gpt-5.4-mini",
+      "default_reasoning": "low",
+      "escalated_model": "gpt-5.4",
+      "escalated_reasoning": "medium"
+    },
+    {
+      "name": "docs-reviewer",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.4",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "ui-worker",
+      "platform_agent_type": "worker",
+      "access_tier": "A5",
+      "default_model": "gpt-5.3-codex",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "data-worker",
+      "platform_agent_type": "worker",
+      "access_tier": "A5",
+      "default_model": "gpt-5.4",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    },
+    {
+      "name": "ops-checker",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    },
+    {
+      "name": "ops-runner",
+      "platform_agent_type": "worker",
+      "access_tier": "A6",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    },
+    {
+      "name": "release-checker",
+      "platform_agent_type": "explorer",
+      "access_tier": "A2",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "medium",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "high"
+    },
+    {
+      "name": "release-runner",
+      "platform_agent_type": "worker",
+      "access_tier": "A6",
+      "default_model": "gpt-5.5",
+      "default_reasoning": "high",
+      "escalated_model": "gpt-5.5",
+      "escalated_reasoning": "xhigh"
+    }
+  ],
+  "task_types": [
+    "answer",
+    "plan",
+    "research",
+    "map",
+    "audit",
+    "review",
+    "implement",
+    "refactor",
+    "debug",
+    "test",
+    "docs",
+    "ui",
+    "data",
+    "ops",
+    "release"
+  ],
+  "task_routes": {
+    "answer": [],
+    "plan": [
+      "planner"
+    ],
+    "research": [
+      "researcher"
+    ],
+    "map": [
+      "mapper"
+    ],
+    "audit": [
+      "mapper",
+      "auditor",
+      "critic"
+    ],
+    "review": [
+      "reviewer",
+      "critic"
+    ],
+    "implement": [
+      "implementer",
+      "reviewer"
+    ],
+    "refactor": [
+      "refactorer",
+      "reviewer"
+    ],
+    "debug": [
+      "debugger",
+      "tester"
+    ],
+    "test": [
+      "tester"
+    ],
+    "docs": [
+      "docs-writer",
+      "docs-reviewer"
+    ],
+    "ui": [
+      "ui-worker",
+      "reviewer"
+    ],
+    "data": [
+      "data-worker",
+      "reviewer"
+    ],
+    "ops": [
+      "ops-checker",
+      "ops-runner"
+    ],
+    "release": [
+      "release-checker",
+      "release-runner"
+    ]
+  },
+  "risk_overlays": [
+    "security",
+    "privacy",
+    "billing",
+    "admin",
+    "destructive",
+    "production",
+    "migration",
+    "long_context",
+    "conflicting_packets"
+  ],
+  "sensitive_overlays": [
+    "security",
+    "privacy",
+    "billing",
+    "admin",
+    "destructive",
+    "production",
+    "migration"
+  ],
+  "fallbacks": {
+    "gpt-5.5": "gpt-5.4",
+    "gpt-5.3-codex": "gpt-5.4",
+    "gpt-5.4-mini": "gpt-5.4"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "reasonweave-codex-plugin",
+  "version": "0.1.0",
+  "description": "Router-first ReasonWeave orchestration for Codex with routing, access, evidence, and proof gates.",
+  "author": {
+    "name": "ReasonWeave"
+  },
+  "homepage": "https://github.com/madhu2456/Reasonweave",
+  "repository": "https://github.com/madhu2456/Reasonweave",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "orchestration",
+    "agents",
+    "routing",
+    "reasonweave"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ReasonWeave",
+    "shortDescription": "Router-first orchestration for complex Codex work.",
+    "longDescription": "ReasonWeave coordinates Codex work with router-first delegation, model and reasoning selection, access contracts, evidence gates, proof gates, and compact packets.",
+    "developerName": "ReasonWeave",
+    "category": "Productivity",
+    "capabilities": [
+      "Orchestration",
+      "Productivity"
+    ],
+    "defaultPrompt": [
+      "Audit this codebase with ReasonWeave.",
+      "Plan this feature with ReasonWeave.",
+      "Debug this failure with ReasonWeave."
+    ],
+    "brandColor": "#2563EB"
+  }
+}
