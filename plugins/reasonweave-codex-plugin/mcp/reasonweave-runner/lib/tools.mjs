@@ -159,6 +159,7 @@ export function getRuntimeCapabilities(_args = {}, deps = {}) {
     metadata_rule: "Use actual provider response fields and HTTP headers only; never intended request fields as proof.",
     runner_limits: policy.runner_limits || null,
     execution_surfaces: Object.keys(executionSurfaces),
+    planner_two_pass_policy: policy.policy?.planner_two_pass_policy || null,
     user_facing_output_policy: {
       api: {
         mode: executionSurfaces.api?.mode || "strict_verified",
@@ -542,6 +543,11 @@ export function selfTest(_args = {}, deps = {}) {
       && policy.execution_surfaces.codex_subscription.report_execution_status === false,
     api_output_is_strict: policy.execution_surfaces?.api?.mode === "strict_verified"
       && policy.execution_surfaces.api.report_execution_status === true,
+    planner_two_pass_policy_valid: policy.policy?.planner_two_pass_policy?.enabled === true
+      && policy.policy.planner_two_pass_policy.logical_agent === "planner"
+      && policy.policy.planner_two_pass_policy.planner_pass?.reasoning_effort === "high"
+      && policy.policy.planner_two_pass_policy.execution_detail_pass?.reasoning_effort === "xhigh"
+      && policy.policy.planner_two_pass_policy.execution_detail_pass?.api_parent_child_receipt_required === true,
     redaction_valid: !JSON.stringify(redact({ Authorization: "Bearer sk-testsecret" })).includes("sk-testsecret"),
   };
   const passed = Object.values(checks).every(Boolean);
@@ -582,6 +588,10 @@ function validateRunArgs(args, policy) {
       && (typeof args.delegated_agent_id !== "string" || !args.delegated_agent_id.trim())) {
     errors.push("delegated_agent_id must be a non-empty string");
   }
+  if (plannerExecutionDetailRequiresParent(policy, args)
+      && (typeof args.parent_run_id !== "string" || !args.parent_run_id.trim())) {
+    errors.push("planner execution_detail_pass requires parent_run_id from the accepted planner_pass");
+  }
   if (args.sensitive_prompt !== undefined && typeof args.sensitive_prompt !== "boolean") {
     errors.push("sensitive_prompt must be a boolean when supplied");
   }
@@ -609,6 +619,17 @@ function validateRunArgs(args, policy) {
     }
   }
   return { valid: errors.length === 0, errors, routeAuthorized };
+}
+
+function plannerExecutionDetailRequiresParent(policy, args) {
+  const twoPass = policy.policy?.planner_two_pass_policy;
+  const detail = twoPass?.execution_detail_pass;
+  return twoPass?.enabled === true
+    && detail?.api_parent_child_receipt_required === true
+    && args.primary_task_type === "plan"
+    && args.logical_agent === twoPass.logical_agent
+    && args.intended_model === detail.model
+    && args.intended_reasoning === detail.reasoning_effort;
 }
 
 function extractProviderMetadata(providerResult, clientRequestId) {

@@ -25,7 +25,39 @@
       "reasoning_effort": "xhigh",
       "applies_to_all_logical_agents": true
     },
-    "max_escalations_per_strand": 2
+    "max_escalations_per_strand": 2,
+    "planner_two_pass_policy": {
+      "enabled": true,
+      "logical_agent": "planner",
+      "planner_pass": {
+        "phase": "planner_pass",
+        "model": "gpt-5.5",
+        "reasoning_effort": "high",
+        "packet_type": "planner_packet"
+      },
+      "execution_detail_pass": {
+        "phase": "execution_detail_pass",
+        "model": "gpt-5.5",
+        "reasoning_effort": "xhigh",
+        "packet_type": "execution_detail_packet",
+        "required_for": [
+          "non_trivial_plan",
+          "implementation_plan",
+          "risky_plan",
+          "cross_file_plan",
+          "api_plugin_mcp_plan",
+          "data_security_ops_release_plan",
+          "agent_handoff_plan"
+        ],
+        "allowed_skip_for": [
+          "trivial_answer",
+          "tiny_one_file_note",
+          "clarification_only"
+        ],
+        "failure_decision": "needs_clarification",
+        "api_parent_child_receipt_required": true
+      }
+    }
   },
   "platform_agent_types": [
     "default",

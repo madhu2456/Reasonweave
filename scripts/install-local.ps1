@@ -4,12 +4,19 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $source = Join-Path $repoRoot "skills\reasonweave-orchestrator"
 $target = "C:\Users\madhu\.agents\skills\reasonweave-orchestrator"
 $targetParent = Split-Path -Parent $target
+$agentsSource = Join-Path $repoRoot "AGENTS.md"
+$agentsTarget = "C:\Users\madhu\.codex\AGENTS.md"
+$agentsTargetParent = Split-Path -Parent $agentsTarget
 $suffix = [Guid]::NewGuid().ToString("N")
 $stage = Join-Path $targetParent ".reasonweave-orchestrator.install-$suffix"
 $backup = Join-Path $targetParent ".reasonweave-orchestrator.backup-$suffix"
 
 if (-not (Test-Path -LiteralPath (Join-Path $source "SKILL.md"))) {
   throw "Source skill not found: $source"
+}
+
+if (-not (Test-Path -LiteralPath $agentsSource)) {
+  throw "Canonical AGENTS.md not found: $agentsSource"
 }
 
 function Get-RelativeFiles($root) {
@@ -19,6 +26,7 @@ function Get-RelativeFiles($root) {
 }
 
 New-Item -ItemType Directory -Force -Path $targetParent | Out-Null
+New-Item -ItemType Directory -Force -Path $agentsTargetParent | Out-Null
 $sourceFiles = @(Get-RelativeFiles $source)
 
 try {
@@ -58,6 +66,12 @@ finally {
   }
 }
 
+Copy-Item -LiteralPath $agentsSource -Destination $agentsTarget -Force
+if ((Get-FileHash -LiteralPath $agentsSource -Algorithm SHA256).Hash -ne (Get-FileHash -LiteralPath $agentsTarget -Algorithm SHA256).Hash) {
+  throw "Global AGENTS.md hash mismatch after sync."
+}
+
 Write-Host "Installed ReasonWeave skill to $target"
 Write-Host "Staged and verified ReasonWeave before replacement with rollback protection ($($sourceFiles.Count) files)."
+Write-Host "Synced canonical AGENTS.md to $agentsTarget"
 Write-Host "Restart Codex to refresh skill metadata."

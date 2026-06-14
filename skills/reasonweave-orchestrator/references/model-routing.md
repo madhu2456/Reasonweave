@@ -47,6 +47,19 @@ escalated_reasoning: xhigh
 access_tier: A2
 ```
 
+Non-trivial planning uses the same planner in two phases:
+
+```text
+planner_pass: planner / explorer / gpt-5.5 / high / A2
+execution_detail_pass: planner / explorer / gpt-5.5 / xhigh / A2
+```
+
+The execution detail pass is required for implementation plans, risky plans, cross-file plans, API/plugin/MCP plans, data/security/ops/release plans, and any plan meant for another agent to implement. It may be skipped only for trivial answers, tiny one-file notes, or clarification-only planning responses.
+
+Do not add or route to a separate `execution-planner` logical agent. The xhigh detail pass is the planner's escalated route. In API mode, the xhigh detail pass must use `parent_run_id` linked to the accepted high planner pass. In subscription mode, show clean advisory planner route lines and do not claim verified execution.
+
+If the xhigh detail pass cannot produce a handoff with no remaining product or architecture decisions, return `needs_clarification` with the missing decisions instead of presenting the plan as implementation-ready.
+
 ## Escalation
 
 Use role escalation when confidence is not high because reasoning is hard. Use an evidence pass when grounding risk is not low or evidence is missing. Use the final resolver only after role escalation or evidence pass fails.

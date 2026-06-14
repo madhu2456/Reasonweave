@@ -47,6 +47,10 @@ test("runtime capabilities expose API strict output and clean subscription advis
   assert.ok(result.structuredContent.user_facing_output_policy.codex_subscription.suppressed_user_facing_fields.includes("execution_status"));
   assert.equal(result.structuredContent.runner_limits.require_provider_response_id, true);
   assert.equal(result.structuredContent.runner_limits.max_output_text_chars, 100000);
+  assert.equal(result.structuredContent.planner_two_pass_policy.enabled, true);
+  assert.equal(result.structuredContent.planner_two_pass_policy.planner_pass.reasoning_effort, "high");
+  assert.equal(result.structuredContent.planner_two_pass_policy.execution_detail_pass.reasoning_effort, "xhigh");
+  assert.equal(result.structuredContent.planner_two_pass_policy.execution_detail_pass.api_parent_child_receipt_required, true);
 });
 
 test("runtime capabilities tolerate partial config objects", async () => {

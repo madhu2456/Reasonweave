@@ -38,7 +38,7 @@ Use `model-routing.yaml` as the source of truth for exact logical agents, models
 
 ## Native Workflow Triggers
 
-- Design, brainstorm, requirements, or approach comparison: route as `plan`; use `design-and-planning.md`.
+- Design, brainstorm, requirements, or approach comparison: route as `plan`; use `design-and-planning.md`; for non-trivial plans run planner `gpt-5.5/high` followed by planner `gpt-5.5/xhigh` execution detail.
 - Implementation plan or execute a plan: route as `implement` when files will change, otherwise `plan`; use `development-discipline.md`.
 - TDD, regression test, or test-first prompt: route as `test` or `implement` depending on whether code changes are requested.
 - Systematic debugging, failure, or unexpected behavior: route as `debug`.
@@ -70,7 +70,8 @@ Risk overlays override task defaults. Sensitive overlays cannot be silently down
 - `router` is the only logical agent that may use platform `default`.
 - Read-only roles use `explorer`.
 - Editing, verification, ops, release, and command-running roles use `worker`.
-- `planner` is read-only but accuracy-critical: use `explorer`, `gpt-5.5`, `high`; escalate to `xhigh`.
+- `planner` is read-only but accuracy-critical: use `explorer`, `gpt-5.5`, `high`; for non-trivial plans immediately run its `xhigh` execution detail pass.
+- Do not create or select a separate `execution-planner`; the execution detail pass is `planner` on its escalated `gpt-5.5/xhigh` route.
 - Workers must have explicit ownership scope before dispatch.
 - API-verified routed work must have trusted runtime metadata or a signed ReasonWeave runner receipt before its execution claims can be accepted.
 - Codex subscription routing is advisory and must use clean route prose without verified execution claims.

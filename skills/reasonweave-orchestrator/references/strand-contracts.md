@@ -129,7 +129,7 @@ EFFORT_TIER:
 ROUTE_CONFIDENCE: high | medium | low
 ROUTE_GROUNDING_RISK: low | medium | high
 SELECTED_AGENTS:
-- logical_agent | platform_agent_type | intended_model | intended_reasoning | fallback_model | owned_scope | packet_type
+- logical_agent | phase | platform_agent_type | intended_model | intended_reasoning | fallback_model | owned_scope | packet_type
 RUNTIME_VERIFICATION:
 - logical_agent | delegated_agent_id | execution_status | execution_model | resolved_model | execution_reasoning | model_match | reasoning_match | verification_source | receipt_valid | block_reason
 COMPLETION_REPORTING:
@@ -140,6 +140,72 @@ ESCALATION:
 - trigger | logical_agent | platform_agent_type | model | reasoning_effort
 NO_DELEGATION_REASON:
 ```
+
+## Planner Packet
+
+```text
+PLANNER PACKET
+PHASE: planner_pass
+ROUTE:
+- logical_agent: planner
+- platform_agent_type: explorer
+- intended_model: gpt-5.5
+- intended_reasoning: high
+- access_tier: A2
+GOAL:
+NON_GOALS:
+DECISIONS:
+- product_or_architecture_decision
+OPEN_QUESTIONS:
+- question_or_none
+IMPLEMENTATION_SHAPE:
+- files_or_modules_likely_to_change
+RISKS:
+- risk - mitigation
+NEXT_PHASE:
+- execution_detail_pass_required: yes | no
+- skip_reason: trivial_answer | tiny_one_file_note | clarification_only | none
+DECISION:
+- ready_for_execution_detail | needs_clarification
+```
+
+## Execution Detail Packet
+
+```text
+EXECUTION DETAIL PACKET
+PHASE: execution_detail_pass
+ROUTE:
+- logical_agent: planner
+- platform_agent_type: explorer
+- intended_model: gpt-5.5
+- intended_reasoning: xhigh
+- access_tier: A2
+PARENT:
+- planner_pass_run_id:
+- api_parent_child_receipt_verified: true | false | not_applicable_subscription
+TARGETS:
+- path_or_module - intended_change
+ORDERED_STEPS:
+- step - owner_agent - dependencies
+INTERFACES:
+- api_schema_output_or_contract_change
+EDGE_CASES:
+- case - expected_behavior
+FAILURE_BEHAVIOR:
+- failure_mode - block_or_recover_action
+VERIFICATION:
+- command_or_check - expected_result
+REVIEW:
+- reviewer_or_verifier - focus
+ASSUMPTIONS:
+- assumption
+NON_GOALS:
+- non_goal
+DECISION:
+- implementation_ready | needs_clarification
+```
+
+The execution detail packet is required for non-trivial plans. If `DECISION: needs_clarification`, list the exact missing product or architecture decisions and do not hand the plan to an implementer.
 
 ## Research Packet
 

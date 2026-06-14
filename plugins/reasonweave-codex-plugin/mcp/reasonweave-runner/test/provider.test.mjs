@@ -268,6 +268,64 @@ test("runVerifiedAgent accepts an authorized sensitive escalation", async () => 
   assert.deepEqual(result.structuredContent.receipt.risk_flags, ["security"]);
 });
 
+test("planner execution detail pass requires a verified parent planner pass", async () => {
+  const { config } = configWithKeys();
+  let providerCalled = false;
+  const result = await runVerifiedAgent(baseArgs({
+    logical_agent: "planner",
+    primary_task_type: "plan",
+    platform_agent_type: "explorer",
+    intended_model: "gpt-5.5",
+    intended_reasoning: "xhigh",
+    access: "A2",
+  }), {
+    config,
+    ledger: new RuntimeLedger(config.ledgerDir),
+    provider: async () => {
+      providerCalled = true;
+      return successfulProvider({ model: "gpt-5.5", reasoning: { effort: "xhigh" } })();
+    },
+  });
+  assert.equal(providerCalled, false);
+  assert.equal(result.isError, true);
+  assert.equal(result.structuredContent.failure_state, "invalid_request");
+  assert.ok(result.structuredContent.block_reason.includes("parent_run_id"));
+});
+
+test("planner high pass can parent the xhigh execution detail pass", async () => {
+  const { config } = configWithKeys();
+  const ledger = new RuntimeLedger(config.ledgerDir);
+  const parent = await runVerifiedAgent(baseArgs({
+    logical_agent: "planner",
+    primary_task_type: "plan",
+    platform_agent_type: "explorer",
+    intended_model: "gpt-5.5",
+    intended_reasoning: "high",
+    access: "A2",
+  }), {
+    config,
+    ledger,
+    provider: successfulProvider({ model: "gpt-5.5", reasoning: { effort: "high" } }),
+  });
+  const detail = await runVerifiedAgent(baseArgs({
+    logical_agent: "planner",
+    primary_task_type: "plan",
+    platform_agent_type: "explorer",
+    intended_model: "gpt-5.5",
+    intended_reasoning: "xhigh",
+    access: "A2",
+    parent_run_id: parent.structuredContent.run_id,
+  }), {
+    config,
+    ledger,
+    provider: successfulProvider({ model: "gpt-5.5", reasoning: { effort: "xhigh" } }),
+  });
+  assert.equal(parent.isError, false);
+  assert.equal(detail.isError, false);
+  assert.equal(detail.structuredContent.receipt.parent_run_id, parent.structuredContent.run_id);
+  assert.equal(detail.structuredContent.execution_reasoning, "xhigh");
+});
+
 test("runVerifiedAgent never exposes or stores output text for a sensitive prompt", async () => {
   const { config } = configWithKeys();
   const ledger = new RuntimeLedger(config.ledgerDir);

@@ -17,11 +17,12 @@ Use this skill for prompts that mention saving tokens, dense mode, delegating to
 2. Validate routing: only `router` may use platform `default`; all other strands must use `explorer` or `worker`.
 3. Show the route format for the execution surface: in ordinary Codex subscription work show `ReasonWeave: logical_agent=<agent>; intended_model=<model>; intended_reasoning=<effort>; access=<tier>; mode=codex_subscription`; in API-verified execution show the full runtime status line defined in `references/runtime-metadata.md`.
 4. Build a Pass Plan: identify independent work, sequencing, owned files, access tier, proof gates, and escalation conditions.
-5. Dispatch only independent strands with clear ownership and allowed tools.
-6. Collect Packets with route, quality, evidence, access, and decision fields.
-7. Integrate results in the main thread.
-8. Pass required Proof Gates, including route validation and grounding validation.
-9. Produce final answer with evidence, decisions, residual risk, and next step; include per-selected-agent runtime status only for API-verified execution.
+5. For non-trivial planning, run `planner` first as `gpt-5.5/high`, then immediately as `gpt-5.5/xhigh` for execution-detail handoff; return `needs_clarification` if product or architecture decisions remain.
+6. Dispatch only independent strands with clear ownership and allowed tools.
+7. Collect Packets with route, quality, evidence, access, and decision fields.
+8. Integrate results in the main thread.
+9. Pass required Proof Gates, including route validation and grounding validation.
+10. Produce final answer with evidence, decisions, residual risk, and next step; include per-selected-agent runtime status only for API-verified execution.
 
 ## Modes
 

@@ -10,6 +10,7 @@ plugins/reasonweave-codex-plugin/  # Repo-native Codex plugin package
 scripts/install-local.ps1          # Sync source skill into the local .agents runtime folder
 scripts/archive-merged-global-skills.ps1 # Archive standalone skills absorbed into ReasonWeave
 scripts/install-plugin-local.ps1   # Copy the plugin into the personal Codex plugin marketplace
+scripts/install-codex-cli-local.sh # Install the plugin, MCP bundle, and custom agents for Codex CLI on Linux/macOS
 scripts/init-reasonweave-runtime.ps1 # Generate local Ed25519 receipt keys outside the repo
 scripts/sync-plugin.ps1            # Sync canonical skill into the plugin package
 docs/                              # Roadmap and validation notes
@@ -30,6 +31,37 @@ C:\Users\madhu\.agents\skills\reasonweave-orchestrator
 ```
 
 Restart Codex after installing so skill metadata refreshes.
+
+### Codex CLI Linux/macOS Install
+
+Run from this repository root:
+
+```bash
+bash scripts/install-codex-cli-local.sh
+```
+
+This installs the repo-native Codex plugin into a local marketplace under:
+
+```text
+~/.codex/reasonweave-marketplace
+```
+
+It also copies the ReasonWeave custom-agent templates to:
+
+```text
+~/.codex/agents
+```
+
+The installer adds a minimal `[agents]` block to `~/.codex/config.toml` only when one does not already exist. It preserves unrelated custom agents and creates a timestamped config backup before editing.
+
+Verify after restarting Codex or opening a new thread:
+
+```bash
+codex plugin marketplace list
+codex plugin list
+codex mcp list
+codex doctor --summary --ascii
+```
 
 After a verified installation of the native memory/growth/web modules, archive the superseded standalone skills:
 

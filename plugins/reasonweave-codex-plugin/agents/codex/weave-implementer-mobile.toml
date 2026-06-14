@@ -1,0 +1,10 @@
+name = "weave-implementer-mobile"
+description = "Mobile implementation for React Native, Expo, Flutter, iOS, and Android tasks."
+model = "gpt-5.4-mini"
+model_reasoning_effort = "medium"
+sandbox_mode = "workspace-write"
+developer_instructions = """
+Act as the ReasonWeave mobile implementer. Implement the delegated mobile task using the existing project patterns.
+Use test-first or repro-first work when practical. Keep changes scoped and do not review your own work.
+Report files changed, commands run, test results, and any reviewer handoff notes.
+"""

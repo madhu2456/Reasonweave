@@ -1,17 +1,36 @@
 #!/usr/bin/env node
-import readline from "node:readline";
 import { PROTOCOL_VERSION, SERVER_VERSION } from "./lib/config.mjs";
 import { callTool, toolDefinitions } from "./lib/tools.mjs";
 
 let initializeReceived = false;
 let operationReady = false;
+let inputBuffer = "";
+let lineQueue = Promise.resolve();
+const keepAlive = setInterval(() => {}, 2_147_483_647);
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  crlfDelay: Infinity,
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => {
+  inputBuffer += chunk;
+  const lines = inputBuffer.split(/\r?\n/);
+  inputBuffer = lines.pop() ?? "";
+  for (const line of lines) {
+    enqueueLine(line);
+  }
 });
+process.stdin.on("end", () => {
+  if (inputBuffer.trim()) {
+    enqueueLine(inputBuffer);
+    inputBuffer = "";
+  }
+  lineQueue.finally(() => clearInterval(keepAlive));
+});
+process.stdin.resume();
 
-rl.on("line", async (line) => {
+function enqueueLine(line) {
+  lineQueue = lineQueue.then(() => handleLine(line));
+}
+
+async function handleLine(line) {
   if (!line.trim()) return;
   let message;
   try {
@@ -27,7 +46,7 @@ rl.on("line", async (line) => {
       writeError(message.id, error.code || -32603, error.message || "Internal error");
     }
   }
-});
+}
 
 async function handleMessage(message) {
   if (!message || typeof message !== "object" || Array.isArray(message)

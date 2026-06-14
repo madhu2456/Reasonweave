@@ -38,6 +38,22 @@ else {
 }
 $syncScript = Join-Path $repoRoot "scripts\sync-plugin.ps1"
 $archiveScript = Join-Path $repoRoot "scripts\archive-merged-global-skills.ps1"
+$repoAgentsPath = Join-Path $repoRoot "AGENTS.md"
+$homePath = if (-not [string]::IsNullOrWhiteSpace($env:USERPROFILE)) {
+    $env:USERPROFILE
+}
+elseif (-not [string]::IsNullOrWhiteSpace($env:HOME)) {
+    $env:HOME
+}
+else {
+    ""
+}
+$globalAgentsPath = if ([string]::IsNullOrWhiteSpace($homePath)) {
+    $null
+}
+else {
+    Join-Path $homePath ".codex\AGENTS.md"
+}
 
 function Assert($condition, $message) {
     if (-not $condition) {
@@ -48,6 +64,17 @@ function Assert($condition, $message) {
 function Read-JsonFile($path) {
     Assert (Test-Path -LiteralPath $path) "Missing file: $path"
     (Get-Content -LiteralPath $path -Raw) | ConvertFrom-Json
+}
+
+function Assert-AgentsTwoPassPolicy($path, $label) {
+    Assert (Test-Path -LiteralPath $path) "Missing $label AGENTS.md: $path"
+    $text = Get-Content -LiteralPath $path -Raw
+    Assert ($text.Contains("For non-trivial planning")) "$label AGENTS.md must require the two-pass planner policy."
+    Assert ($text.Contains("ReasonWeave: logical_agent=planner; intended_model=gpt-5.5; intended_reasoning=high; access=A2; mode=codex_subscription")) "$label AGENTS.md missing planner high route line."
+    Assert ($text.Contains("ReasonWeave: logical_agent=planner; intended_model=gpt-5.5; intended_reasoning=xhigh; access=A2; mode=codex_subscription")) "$label AGENTS.md missing planner xhigh route line."
+    Assert ($text.Contains("treat the Plan Gate as failed")) "$label AGENTS.md must fail the Plan Gate when xhigh detail is missing."
+    Assert ($text.Contains("trivial_answer") -and $text.Contains("tiny_one_file_note") -and $text.Contains("clarification_only")) "$label AGENTS.md must list allowed skip reasons."
+    Assert ($text.Contains("needs_clarification")) "$label AGENTS.md must require needs_clarification when decisions remain."
 }
 
 function Get-Agent($routing, $name) {
@@ -116,6 +143,11 @@ function Test-AllowedRouteSelection($routing, $agent, $model, $reasoning) {
 
 $routing = Read-JsonFile $routingPath
 
+Assert-AgentsTwoPassPolicy $repoAgentsPath "Repo"
+if (-not [string]::IsNullOrWhiteSpace($globalAgentsPath) -and (Test-Path -LiteralPath $globalAgentsPath)) {
+    Assert-AgentsTwoPassPolicy $globalAgentsPath "Global"
+}
+
 Assert ($routing.policy.statement -eq "ReasonWeave does not claim permanent mathematical optimality; it enforces measurable routing quality through validation, evidence gates, evals, and safe blocking.") "Policy statement is missing or changed."
 Assert ($routing.policy.acceptance.confidence -eq "high") "Acceptance confidence must be high."
 Assert ($routing.policy.acceptance.grounding_risk -eq "low") "Acceptance grounding_risk must be low."
@@ -130,6 +162,25 @@ Assert ($routing.policy.acceptance.dispatch_authorized -eq $true) "Acceptance di
 Assert ($routing.policy.terminal_route.applies_to_all_logical_agents -eq $true) "Terminal route must apply to every logical agent."
 Assert ($routing.policy.terminal_route.model -eq "gpt-5.5") "Terminal route model must be gpt-5.5."
 Assert ($routing.policy.terminal_route.reasoning_effort -eq "xhigh") "Terminal route reasoning must be xhigh."
+
+$twoPass = $routing.policy.planner_two_pass_policy
+Assert ($null -ne $twoPass) "Missing planner_two_pass_policy."
+Assert ($twoPass.enabled -eq $true) "Planner two-pass policy must be enabled."
+Assert ($twoPass.logical_agent -eq "planner") "Planner two-pass policy must use the planner logical agent."
+Assert ($twoPass.planner_pass.phase -eq "planner_pass") "Planner pass phase must be planner_pass."
+Assert ($twoPass.planner_pass.model -eq "gpt-5.5") "Planner pass model must be gpt-5.5."
+Assert ($twoPass.planner_pass.reasoning_effort -eq "high") "Planner pass reasoning must be high."
+Assert ($twoPass.execution_detail_pass.phase -eq "execution_detail_pass") "Execution detail phase must be execution_detail_pass."
+Assert ($twoPass.execution_detail_pass.model -eq "gpt-5.5") "Execution detail model must be gpt-5.5."
+Assert ($twoPass.execution_detail_pass.reasoning_effort -eq "xhigh") "Execution detail reasoning must be xhigh."
+Assert ($twoPass.execution_detail_pass.failure_decision -eq "needs_clarification") "Execution detail failure decision must be needs_clarification."
+Assert ($twoPass.execution_detail_pass.api_parent_child_receipt_required -eq $true) "Planner API detail pass must require parent/child receipt proof."
+foreach ($requiredTrigger in @("non_trivial_plan", "implementation_plan", "risky_plan", "cross_file_plan", "api_plugin_mcp_plan", "data_security_ops_release_plan", "agent_handoff_plan")) {
+    Assert (@($twoPass.execution_detail_pass.required_for) -contains $requiredTrigger) "Planner detail policy missing required trigger: $requiredTrigger"
+}
+foreach ($skipTrigger in @("trivial_answer", "tiny_one_file_note", "clarification_only")) {
+    Assert (@($twoPass.execution_detail_pass.allowed_skip_for) -contains $skipTrigger) "Planner detail policy missing allowed skip trigger: $skipTrigger"
+}
 
 $requiredExecutionStatuses = @("runtime_verified", "receipt_verified", "spawn_request_only", "blocked_unverified", "failed")
 foreach ($status in $requiredExecutionStatuses) {
@@ -277,6 +328,8 @@ Assert ($planner.platform_agent_type -eq "explorer") "Planner must be explorer."
 Assert ($planner.default_model -eq "gpt-5.5") "Planner default model must be gpt-5.5."
 Assert ($planner.default_reasoning -eq "high") "Planner default reasoning must be high."
 Assert ($planner.escalated_reasoning -eq "xhigh") "Planner escalated reasoning must be xhigh."
+Assert ((@($routing.logical_agents | Where-Object { $_.name -eq "execution-planner" })).Count -eq 0) "Do not add execution-planner as a separate logical agent; use planner xhigh detail pass."
+Assert (-not (@($routing.task_types) -contains "execution-plan")) "Do not add execution-plan as a separate task type; use plan with planner two-pass policy."
 
 $memoryCleaner = Get-Agent $routing "memory-cleaner"
 Assert ($memoryCleaner.platform_agent_type -eq "worker") "Memory cleaner must be worker."
@@ -398,6 +451,8 @@ Assert ((Get-FileHash -LiteralPath $routingPath -Algorithm SHA256).Hash -eq (Get
 
 Assert (Test-Path -LiteralPath $routeCasesPath) "Missing route cases: $routeCasesPath"
 $caseCount = 0
+$plannerTwoPassCaseCount = 0
+$plannerSkipCaseCount = 0
 $coveredTaskTypes = @{}
 $coveredAgents = @{}
 $coveredNativeWorkflowPrompts = @{}
@@ -433,6 +488,30 @@ foreach ($line in Get-Content -LiteralPath $routeCasesPath) {
     Assert ($selectedAgents.Count -gt 0) "Route case $($case.prompt) must include selected_agents."
     Assert ($selectedAgents[0].logical_agent -eq "router") "Route case $($case.prompt) must start with router."
     Assert ($selectedAgents[0].platform_agent_type -eq "default") "Route case $($case.prompt) must start with platform default router."
+    if ($case.PSObject.Properties.Name -contains "requires_execution_detail_pass") {
+        $plannerHighPass = @($selectedAgents | Where-Object {
+            $_.logical_agent -eq $twoPass.logical_agent `
+                -and $_.phase -eq $twoPass.planner_pass.phase `
+                -and $_.model -eq $twoPass.planner_pass.model `
+                -and $_.reasoning_effort -eq $twoPass.planner_pass.reasoning_effort
+        })
+        $plannerDetailPass = @($selectedAgents | Where-Object {
+            $_.logical_agent -eq $twoPass.logical_agent `
+                -and $_.phase -eq $twoPass.execution_detail_pass.phase `
+                -and $_.model -eq $twoPass.execution_detail_pass.model `
+                -and $_.reasoning_effort -eq $twoPass.execution_detail_pass.reasoning_effort
+        })
+        if ($case.requires_execution_detail_pass -eq $true) {
+            Assert ($plannerHighPass.Count -eq 1) "Plan case $($case.prompt) must include exactly one planner_pass high route."
+            Assert ($plannerDetailPass.Count -eq 1) "Plan case $($case.prompt) must include exactly one execution_detail_pass xhigh route."
+            $plannerTwoPassCaseCount++
+        }
+        else {
+            Assert ($plannerHighPass.Count -eq 1) "Trivial plan case $($case.prompt) must include the planner_pass high route."
+            Assert ($plannerDetailPass.Count -eq 0) "Trivial plan case $($case.prompt) must not include execution_detail_pass."
+            $plannerSkipCaseCount++
+        }
+    }
     foreach ($selected in $selectedAgents) {
         $agent = Get-Agent $routing $selected.logical_agent
         $coveredAgents[$selected.logical_agent] = $true
@@ -455,6 +534,8 @@ foreach ($line in Get-Content -LiteralPath $routeCasesPath) {
     }
 }
 Assert ($caseCount -ge 40) "Expected at least 40 golden route cases."
+Assert ($plannerTwoPassCaseCount -ge 3) "Expected at least 3 non-trivial plan cases covering planner two-pass routing."
+Assert ($plannerSkipCaseCount -ge 1) "Expected at least 1 trivial plan case that skips execution detail."
 
 foreach ($taskType in $routing.task_types) {
     Assert $coveredTaskTypes.ContainsKey($taskType) "Route cases do not cover task type '$taskType'."
@@ -470,6 +551,8 @@ foreach ($nativePrompt in $requiredNativeWorkflowPrompts) {
 
 Assert (Test-Path -LiteralPath $runtimeCasesPath) "Missing runtime verification cases: $runtimeCasesPath"
 $runtimeCaseCount = 0
+$plannerDetailChildReceiptCovered = $false
+$plannerDetailMissingParentCovered = $false
 foreach ($line in Get-Content -LiteralPath $runtimeCasesPath) {
     if ([string]::IsNullOrWhiteSpace($line)) {
         continue
@@ -498,8 +581,20 @@ foreach ($line in Get-Content -LiteralPath $runtimeCasesPath) {
     else {
         Assert (-not $passesGate) "Runtime case $($runtimeCase.name) should block Runtime Verification Gate."
     }
+    if ($runtimeCase.name -eq "planner detail child receipt verified") {
+        Assert ($runtimeCase.parent_chain_verified -eq $true) "Planner detail child receipt case must mark parent_chain_verified."
+        Assert ($runtimeCase.intended_model -eq $twoPass.execution_detail_pass.model) "Planner detail child receipt case must use detail model."
+        Assert ($runtimeCase.intended_reasoning -eq $twoPass.execution_detail_pass.reasoning_effort) "Planner detail child receipt case must use detail reasoning."
+        $plannerDetailChildReceiptCovered = $true
+    }
+    if ($runtimeCase.name -eq "planner detail missing parent chain blocks") {
+        Assert ($runtimeCase.failure_state -eq "parent_child_chain_mismatch") "Planner detail missing parent case must use parent_child_chain_mismatch."
+        $plannerDetailMissingParentCovered = $true
+    }
 }
 Assert ($runtimeCaseCount -ge 12) "Expected at least 12 runtime verification cases."
+Assert $plannerDetailChildReceiptCovered "Runtime cases must cover accepted planner detail child receipt."
+Assert $plannerDetailMissingParentCovered "Runtime cases must cover planner detail parent-chain block."
 
 Assert (Test-Path -LiteralPath $workflowCasesPath) "Missing mock workflow cases: $workflowCasesPath"
 $workflowCaseCount = 0

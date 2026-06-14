@@ -9,7 +9,7 @@ Proof Gates prevent false completion claims.
 - Access Gate: every delegated packet reports tools, files, commands, network, approvals, and `access_violations: none`.
 - Grounding Gate: every accepted packet has `confidence: high`, `grounding_risk: low`, and direct evidence or clearly named assumptions.
 - Review Reporting Gate: API routes that select `reviewer`, `docs-reviewer`, or `critic` report verified, blocked, or failed status; subscription routes do not imply an API-verified review.
-- Plan Gate: no blank sections, exact paths, acceptance criteria, risks named.
+- Plan Gate: no blank sections, exact paths, acceptance criteria, risks named, and non-trivial plans include planner `gpt-5.5/high` plus planner `gpt-5.5/xhigh` execution detail.
 - Design Gate: new or ambiguous work has enough intent, constraints, alternatives, and assumptions to avoid hidden product decisions during implementation.
 - TDD Gate: behavior-changing code has a failing test, route eval, or named alternative proof before the fix is accepted.
 - Debug Gate: bugfix work reports reproduction status, root-cause evidence, hypothesis, fix, and verification.
@@ -42,6 +42,8 @@ For API-verified acceptance, block missing metadata, spawn-request-only proof, m
 
 Use `execution_status=failed` with a named failure state for provider refusal, model unavailable, tool spawn failure, timeout, receipt verification failure, or unauthorized fallback attempt.
 
+For API planner two-pass work, the xhigh execution detail pass must reference the accepted high planner pass with a valid parent/child receipt chain. Missing, stale, tampered, or mismatched parent evidence blocks the execution detail pass.
+
 ## Review Reporting Rule
 
 For API routes that include `reviewer`, `docs-reviewer`, or `critic`, the final answer must include a status for that strand. If runtime verification is unavailable, report:
@@ -55,5 +57,6 @@ For subscription work, omit unverified reviewer status labels and do not claim A
 ## Native Workflow Rules
 
 - Design/planning: use `design-and-planning.md`; block if high-impact ambiguity remains.
+- Non-trivial planning: run the planner high pass, then the planner xhigh execution detail pass; return `needs_clarification` if another agent would still need to make product or architecture decisions.
 - Implementation/testing/debugging: use `development-discipline.md`; block completion claims without fresh evidence.
 - Review/release/branch finishing: use `review-and-release.md`; block destructive or production actions without approval and verified routing.
