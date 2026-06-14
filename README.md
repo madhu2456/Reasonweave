@@ -1,6 +1,54 @@
 # ReasonWeave Agent Suite
 
-ReasonWeave is a Codex orchestration and token-efficiency skill system. It coordinates complex work through native design, planning, TDD, debugging, review, release, workspace safety, patterns, strands, passes, proof gates, runtime verification, and compressed packets.
+* **Built by**: Madhu Dadi
+* **Canonical profile**: https://madhudadi.in/profile/
+* **Service relevance**: AI Agents & Orchestration / Codex Integration
+
+---
+
+> A comprehensive Codex orchestration and token-efficiency skill system coordinating complex work through native design, planning, TDD, debugging, review, release, workspace safety, and compressed packets. Built by [Madhu Dadi](https://madhudadi.in).
+
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**Developer Portfolio:** [https://madhudadi.in](https://madhudadi.in) | **Blog:** [https://madhudadi.in/blog](https://madhudadi.in/blog) | **Adticks:** [https://adticks.com](https://adticks.com)
+
+---
+
+## What is ReasonWeave?
+
+**ReasonWeave** is a Codex orchestration and token-efficiency skill system. It coordinates complex work through native design, planning, TDD, debugging, review, release, workspace safety, patterns, strands, passes, proof gates, runtime verification, and compressed packets. 
+
+---
+
+## Why This Exists
+
+ReasonWeave provides two execution surfaces for Agent orchestration. Ordinary Codex subscription work uses clean advisory routing and normal proof gates without claiming verified model/reasoning execution. API-backed runner work fails closed: verified execution claims require trusted runtime metadata or a signed runner receipt.
+
+It solves the problem of coordinating complex AI agent workflows, providing verified execution trails, managing token efficiency through compressed packets, and integrating deeply with Codex natively.
+
+---
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Orchestration** | Coordinates complex work through native design, planning, TDD, debugging, and review. |
+| **Proof Gates** | Ensures workspace safety, patterns, passes, and runtime verification. |
+| **Token-Efficiency** | Utilizes compressed packets to optimize token usage and context. |
+| **Cross-Platform** | Local install support for Windows (PowerShell) and Linux/macOS (Bash). |
+| **MCP Runtime** | Bundles an MCP server for verifying agent runs and retrieving metadata. |
+| **Native Modules** | Built-in workflows for memory/context handling, growth intelligence, and web tasks. |
+
+---
+
+## Technical Architecture
+
+- **Skills:** Global Codex skills (`reasonweave-orchestrator`)
+- **Plugins:** Repo-native Codex plugin package (`reasonweave-codex-plugin`)
+- **Scripts:** PowerShell and Bash installation/sync scripts
+- **MCP Server:** Stdio MCP server exposing capabilities like `reasonweave.run_verified_agent`
+
+---
 
 ## Repository Layout
 
@@ -83,8 +131,6 @@ The canonical skill source remains `skills/reasonweave-orchestrator`. Run this a
 ```
 
 The plugin copy is committed for distribution, but it must stay in sync with the canonical skill.
-
-ReasonWeave has two execution surfaces. Ordinary Codex subscription work uses clean advisory routing and normal proof gates without claiming verified model/reasoning execution. API-backed runner work fails closed: verified execution claims require trusted runtime metadata or a signed runner receipt.
 
 ## MCP Runtime Metadata
 
